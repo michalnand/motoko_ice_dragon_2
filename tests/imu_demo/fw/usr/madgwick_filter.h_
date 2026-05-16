@@ -1,0 +1,31 @@
+#ifndef MADGWICK_FILTER_H
+#define MADGWICK_FILTER_H   
+
+#include "tmath.h
+
+
+class MadgwickFilter {
+    public:
+        MadgwickFilter(float beta);
+        void init(float beta);
+
+
+        void step(float gx, float gy, float gz,
+                  float ax, float ay, float az,
+                  float dt);
+        
+            
+    private:
+        float beta;       
+
+        float q_w ;
+        float q_x ;
+        float q_y ;
+        float q_z ;
+
+        float roll  ;
+        float pitch ;
+        float yaw   ;
+};
+
+#endif

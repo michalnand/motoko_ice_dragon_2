@@ -1,0 +1,52 @@
+
+
+
+terminal init done
+gyro init done
+gyro offset  0.519
+gyro result  0.171
+ADC init done
+line sensor init done
+IR sensor init done
+motor init done
+u_in   =  0.050
+k      =  678.751
+rpm    = 324
+x_mean =  33.937
+x_var  =  0.320
+
+
+u_in   =  0.100
+k      =  722.866
+rpm    = 690
+x_mean =  72.286
+x_var  =  0.731
+
+
+u_in   =  0.200
+k      =  592.100
+rpm    = 1130
+x_mean =  118.420
+x_var  =  4.010
+
+
+u_in   =  0.300
+k      =  475.976
+rpm    = 1363
+x_mean =  142.792
+x_var  =  7.490
+
+
+u_in   =  0.400
+k      =  396.343
+rpm    = 1513
+x_mean =  158.537
+x_var  =  14.381
+
+
+k          =  573.207
+x_var_mean =  5.387
+
+
+periods = 93
+tau     =  20.371[ms]

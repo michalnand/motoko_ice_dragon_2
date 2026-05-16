@@ -1,0 +1,110 @@
+#include "madgwick_filter.h"
+
+
+
+
+MadgwickFilter::MadgwickFilter(float beta)
+{
+    init(beta)
+}
+
+
+void MadgwickFilter::init(float beta)
+{
+    this->beta = beta;
+
+    this->q_w = 1.0f;
+    this->q_x = 0.0f;
+    this->q_y = 0.0f;
+    this->q_z = 0.0f;
+
+    this->roll  = 0.0f;
+    this->pitch = 0.0f;
+    this->yaw   = 0.0f;
+}
+
+
+/*
+    Madgwick IMU filter
+    @param ax, ay, az - accelerometer readings [g]
+    @param gx, gy, gz - gyroscope readings [rad/s]
+    @param dt - time step [s]
+ */
+void MadgwickFilter::step(  float gx, float gy, float gz,
+                            float ax, float ay, float az,
+                            float dt) 
+{
+    float w = q_w;
+    float x = q_x;
+    float y = q_y;
+    float z = q_z;
+
+    // normalize accelerometer
+    float acc_norm = sqrtf(ax*ax + ay*ay + az*az);
+    float inv_acc_norm = 1.0f / acc_norm;
+
+    ax *= inv_acc_norm;
+    ay *= inv_acc_norm;
+    az *= inv_acc_norm;
+    
+    // gradient descent - objective function f
+    float f0 = 2.0f*(x*z - w*y) - ax;
+    float f1 = 2.0f*(w*x + y*z) - ay;
+    float f2 = 2.0f*(0.5f - x*x - y*y) - az;
+    
+    // Jacobian J^T * f (gradient step)
+    float step_w = -2.0f*y*f0 + 2.0f*x*f1;
+    float step_x =  2.0f*z*f0 + 2.0f*w*f1 - 4.0f*x*f2;
+    float step_y = -2.0f*w*f0 + 2.0f*z*f1 - 4.0f*y*f2;
+    float step_z =  2.0f*x*f0 + 2.0f*y*f1;
+    
+    // normalize step
+    float step_norm = sqrtf(step_w*step_w + step_x*step_x + 
+                            step_y*step_y + step_z*step_z);
+    if (step_norm > 0.0f)
+    {
+        float inv_step_norm = 1.0f / step_norm;
+        step_w *= inv_step_norm;
+        step_x *= inv_step_norm;
+        step_y *= inv_step_norm;
+        step_z *= inv_step_norm;
+    }
+    
+    // Quaternion derivative from gyroscope: q_dot = 0.5 * q * omega
+    // omega_q = [0, gx, gy, gz]
+    // q * omega_q multiplication:
+    float q_dot_w = 0.5f * (-x*gx - y*gy - z*gz);
+    float q_dot_x = 0.5f * ( w*gx + y*gz - z*gy);
+    float q_dot_y = 0.5f * ( w*gy - x*gz + z*gx);
+    float q_dot_z = 0.5f * ( w*gz + x*gy - y*gx);
+    
+    // Apply gradient descent correction
+    q_dot_w -= beta * step_w;
+    q_dot_x -= beta * step_x;
+    q_dot_y -= beta * step_y;
+    q_dot_z -= beta * step_z;
+    
+    // Integrate quaternion
+    q_w = w + q_dot_w * dt;
+    q_x = x + q_dot_x * dt;
+    q_y = y + q_dot_y * dt;
+    q_z = z + q_dot_z * dt;
+    
+    // Normalize quaternion
+    float q_norm = sqrtf(q_w*q_w + q_x*q_x + q_y*q_y + q_z*q_z);
+    if (q_norm > 0.0f) 
+    {
+        float inv_q_norm = 1.0f / q_norm;
+        q_w *= inv_q_norm;
+        q_x *= inv_q_norm;
+        q_y *= inv_q_norm;
+        q_z *= inv_q_norm;
+    }
+
+    // Convert quaternion to Euler angles
+    w = q_w; x = q_x; y = q_y; z = q_z;
+    
+    *roll  = atan2f(2.0f*(w*x + y*z), 1.0f - 2.0f*(x*x + y*y));
+    *pitch = asinf(2.0f*(w*y - z*x));
+    *yaw   = atan2f(2.0f*(w*z + x*y), 1.0f - 2.0f*(y*y + z*z));
+}
