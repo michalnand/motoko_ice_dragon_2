@@ -30,6 +30,9 @@ void encoder_calibration();
 
 void gyro_control_test();
 
-void position_test();
+
+
+void RobotIdentification();
+void PositionControlTest();
 
 #endif

@@ -163,7 +163,7 @@ void encoder_calibration()
             terminal << left_encoder.angle << " ";
             terminal << "\n";      
         }
-        
+            
     
         foc_control.set_torque_from_rotation(PWM_VALUE_MAX*0.3, n, 0);
         foc_control.set_torque_from_rotation(PWM_VALUE_MAX*0.3, n, 1);

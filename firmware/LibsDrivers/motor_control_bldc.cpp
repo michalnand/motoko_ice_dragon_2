@@ -78,30 +78,45 @@ int MotorControl::init()
     int right_init_res = right_encoder.init();   
     int left_init_res  = left_encoder.init(); 
 
+    
     // calibrate zero offset
-    right_encoder.calibrate(3018);
-    left_encoder.calibrate(1883);
+    right_encoder.calibrate(1654);    
+    left_encoder.calibrate(1883);   
 
     // refresh encoders 
     right_encoder.update();      
     left_encoder.update();    
     
 
-    //right_filter.init(4, 32, 0.1f, 0.1f, MOTOR_CONTROL_DT);
-    //left_filter.init(4, 32, 0.1f, 0.1f, MOTOR_CONTROL_DT);
+    /*
+    for (unsigned int i = 0; i < 10; i++)     
+    {
+        // torque, rotor angle, motor ID (left or right)
+        int32_t torque = (PWM_VALUE_MAX*i)/10;
+        this->set_torque_from_rotation(torque, (90*(int32_t)ENCODER_RESOLUTION)/360, 0);
+        this->set_torque_from_rotation(torque, (90*(int32_t)ENCODER_RESOLUTION)/360, 1);
+        timer.delay_ms(4);
+    }
 
-    //right_filter.init(1, 20, 0.1f, 0.05f, MOTOR_CONTROL_DT);
-    //left_filter.init(1, 20, 0.1f, 0.05f, MOTOR_CONTROL_DT);
+    timer.delay_ms(200);
 
-    //right_filter.init(1, 20, 0.1f, 0.1f, MOTOR_CONTROL_DT);
-    //left_filter.init(1, 20, 0.1f, 0.1f, MOTOR_CONTROL_DT);
+    right_encoder.set_zero();      
+    left_encoder.set_zero();    
+    right_encoder.set_zero();      
+    left_encoder.set_zero();
 
-    right_filter.init(3, 20, 0.1f, 0.1f, MOTOR_CONTROL_DT);
-    left_filter.init(3, 20, 0.1f, 0.1f, MOTOR_CONTROL_DT);
+    right_encoder.update();      
+    left_encoder.update();   
+
+    this->set_torque_from_rotation(0, (90*(int32_t)ENCODER_RESOLUTION)/360, 0);
+    this->set_torque_from_rotation(0, (90*(int32_t)ENCODER_RESOLUTION)/360, 1);
+    */
 
 
-    state_filter.init(WHEEL_RADIUS_MM/1000.0f, WHEEL_BRACE_MM/1000.0f, 1.0f, 0.1f);
+    right_filter.init(4, 20, 0.1f, 0.1f, MOTOR_CONTROL_DT);
+    left_filter.init(4, 20, 0.1f, 0.1f, MOTOR_CONTROL_DT);  
 
+    state_filter.init(WHEEL_RADIUS_MM/1000.0f, WHEEL_BRACE_MM/1000.0f, 1.0f, 0.2f);
 
 
     // LQR controller init  
@@ -118,7 +133,6 @@ int MotorControl::init()
     timer.delay_ms(100);
     this->reset_position();
   
-
     if (left_init_res != 0)
     {
         return -1;
@@ -193,20 +207,21 @@ float MotorControl::get_left_velocity()
     return this->left_filter.velocity_est;
 }
 
+
 // robot odometry state
 float MotorControl::get_distance()
 {
     return this->state_filter.distance_est;
 }
 
-float MotorControl::get_angle()
-{
-    return this->state_filter.angle_est;
-}
-
 float MotorControl::get_velocity()
 {   
     return this->state_filter.velocity_est;
+}
+
+float MotorControl::get_angle()
+{
+    return this->state_filter.angle_est;
 }
 
 float MotorControl::get_angular_velocity()
@@ -278,14 +293,11 @@ void MotorControl::callback()
         this->left_req_torque = this->left_controller.u + ks*sgn(left_req_velocity);
     }   
 
-    
-
     // scale -1...1 range into -PWM_VALUE_MAX .. PWM_VALUE_MAX
     // send torques to motors   
-    set_torque_from_rotation(this->right_req_torque*PWM_VALUE_MAX, right_encoder.angle, 1);
+    set_torque_from_rotation(-this->right_req_torque*PWM_VALUE_MAX, right_encoder.angle, 1);
     set_torque_from_rotation(-this->left_req_torque*PWM_VALUE_MAX, left_encoder.angle, 0);
     
-
     this->steps++;  
 }
 
@@ -299,31 +311,31 @@ void MotorControl::callback()
 
 void MotorControl::timer_init()
 {
-    /* Enable TIM2 clock (on APB1) */
+    // Enable TIM2 clock (on APB1)
     LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM2);
 
-    /* Disable TIM2 during configuration */
+    // Disable TIM2 during configuration
     LL_TIM_DisableCounter(TIM2);
 
-    /* Timer clock = 216 MHz (APB1 doubled) */
-    /* Prescaler = 215 → 216 MHz / 216 = 1 MHz timer tick */
+    // Timer clock = 216 MHz (APB1 doubled)
+    // Prescaler = 215 → 216 MHz / 216 = 1 MHz timer tick
     LL_TIM_SetPrescaler(TIM2, 215);
 
-    /* Auto-reload for 4 kHz: 1 MHz / 250 = 4000 Hz */
+    // Auto-reload for 4 kHz: 1 MHz / 250 = 4000 Hz
     LL_TIM_SetAutoReload(TIM2, 1000000/MOTOR_TIMER_FREQ);
 
 
-    /* Enable update interrupt (UIE) */
+    // Enable update interrupt (UIE)
     LL_TIM_EnableIT_UPDATE(TIM2);       
 
     // TIM2 highest priority, p = 0
     NVIC_SetPriority(TIM2_IRQn, NVIC_EncodePriority(3, 0, 0));
     NVIC_EnableIRQ(TIM2_IRQn);
 
-    /* Clear update flag */
+    // Clear update flag
     LL_TIM_ClearFlag_UPDATE(TIM2);
 
-    /* Start counter */
+    // Start counter
     LL_TIM_EnableCounter(TIM2);
 }
 
@@ -338,7 +350,6 @@ void MotorControl::set_torque_from_rotation(int32_t torque, uint32_t rotor_angle
     // convert mechanical angle to electrical angle and index into sine table
     uint32_t table_angle = (rotor_angle*MOTOR_POLES*SINE_TABLE_SIZE)/(2*ENCODER_RESOLUTION);
 
-    
     if (torque >= 0)
     {   
         table_angle = (table_angle - (3*SINE_TABLE_SIZE)/4) % SINE_TABLE_SIZE;
@@ -348,7 +359,6 @@ void MotorControl::set_torque_from_rotation(int32_t torque, uint32_t rotor_angle
         torque = -torque;
         table_angle = (table_angle + (3*SINE_TABLE_SIZE)/4) % SINE_TABLE_SIZE;
     }    
-
 
 
     // produce 3-phase shifted angles
@@ -361,7 +371,6 @@ void MotorControl::set_torque_from_rotation(int32_t torque, uint32_t rotor_angle
     int32_t sb = sine_table[angle_b];   
     int32_t sc = sine_table[angle_c];
 
-   
 
     int32_t pwm_a = (sa*torque)/SINE_VALUE_MAX;
     int32_t pwm_b = (sb*torque)/SINE_VALUE_MAX; 

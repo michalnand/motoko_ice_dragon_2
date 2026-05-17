@@ -59,9 +59,9 @@ class MotorControl
         // robot state getting
     public:
         float get_distance();
-        float get_angle();
-
         float get_velocity();
+
+        float get_angle();
         float get_angular_velocity();
 
     public:

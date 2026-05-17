@@ -41,7 +41,7 @@ void motor_pwm_test()
         if (((cnt%200) == 0) && (inc < 20))
         {
             inc++;
-        }
+        }   
         
 
         cnt++;  

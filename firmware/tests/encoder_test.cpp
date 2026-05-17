@@ -13,7 +13,7 @@ void encoder_test()
 
     uint32_t cnt = 0;
     while (1)
-    {
+    {       
         right_encoder.update();
         left_encoder.update();
         

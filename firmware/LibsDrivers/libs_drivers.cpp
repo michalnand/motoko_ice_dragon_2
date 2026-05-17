@@ -85,11 +85,10 @@ void LibsDriversInit()
     terminal << "line sensor init done\n";
 
     // distance IR sensor init
-    ir_sensor.init();
-    terminal << "IR sensor init done\n";
+    //ir_sensor.init();
+    //terminal << "IR sensor init done\n";
     
-    
-    
+
     // motor control init
     int motor_init_res = motor_control.init();
 
@@ -102,7 +101,6 @@ void LibsDriversInit()
         terminal << "motor init FAILED\n";
         blink_error(2);
     }
-    
 
-     led.on(LED::BLUE);
+    led.on(LED::BLUE);
 }

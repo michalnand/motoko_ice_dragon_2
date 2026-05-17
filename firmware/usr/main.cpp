@@ -8,27 +8,15 @@ int main()
     LibsDriversInit();
 
 
-    //while (1)
+   
+
+    for (unsigned int n = 0; n < 3; n++)
     {
-        led.on(LED::RED);
-        timer.delay_ms(20);
-        led.off(LED::RED);
-        timer.delay_ms(200);
-
-
-        led.on(LED::GREEN);
-        timer.delay_ms(20);
-        led.off(LED::GREEN);
-        timer.delay_ms(200);
-
-
         led.on(LED::BLUE);
         timer.delay_ms(20);
         led.off(LED::BLUE);
         timer.delay_ms(200);
-        
-        timer.delay_ms(800);
-    }
+    }   
 
     
     //button();
@@ -43,15 +31,19 @@ int main()
     //motor_driver_test();  
     //encoder_filter_test();  
     //motor_identification();
-    motor_control_test();
+    //motor_control_test();
 
-    
+
 
     //gyro_control_test();
 
-    //position_test();
+    //position_test();    
     
+    //RobotIdentification();
+    PositionControlTest();  
 
+    //gyro_control_test();
+    
     //line_test();
     //ir_test();
     
