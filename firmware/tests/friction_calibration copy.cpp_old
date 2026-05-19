@@ -1,0 +1,85 @@
+#include <libs_drivers.h>
+#include <tmath.h>
+
+
+
+void FrictionCalibration()
+{
+
+    float torque_min = 0.0f;
+    float torque_max = 0.05f;
+    float vel_th     = 30.0f* (2.0f*PI/180.0f);
+
+    
+    while (1)
+    {
+        terminal << "\n\n\n";   
+        terminal << "starting estimation\n";
+
+        // stop motors
+        motor_control.set_right_torque(0);
+        motor_control.set_left_torque(0);
+        timer.delay_ms(400);
+
+        // estimate initial velocity
+        float right_velocity_initial = 0.0f;
+        float left_velocity_initial  = 0.0f;
+
+        for (unsigned int n = 0; n < 100; n++)
+        {
+            right_velocity_initial+= motor_control.get_right_velocity();
+            left_velocity_initial+= motor_control.get_left_velocity();
+            timer.delay_ms(2);
+        }
+
+        right_velocity_initial/= 100;
+        left_velocity_initial/= 100;
+
+        
+        // start slowly rising torque
+        unsigned int n_steps = 50;
+
+        float right_torque_start = torque_max;
+        float left_torque_start  = torque_max;
+
+        for (unsigned int n = 0; n < 100; n++)
+        {
+            float k      = n/(n_steps - 1.0f);
+            float torque = (1.0f - k)*torque_min + k*torque_max;
+
+            float right_velocity = motor_control.get_right_velocity();
+            float left_velocity  = motor_control.get_left_velocity();
+
+           
+            // capture minimal torque for movement start
+            if (abs(right_velocity_initial - right_velocity) > vel_th)
+                if (abs(torque) < abs(right_torque_start))
+                {
+                    right_torque_start = torque;
+                }
+
+            if (abs(left_velocity_initial - left_velocity) > vel_th)
+                if (abs(torque) < abs(left_torque_start))
+                {
+                    left_torque_start = torque;
+                }
+
+            terminal << torque << " " << right_torque_start << " " << left_torque_start << "\n";
+            //terminal << motor_control.right_vel_hat << " " << motor_control.get_right_velocity() << "\n";
+            //terminal << motor_control.left_vel_hat << " " << motor_control.get_left_velocity() << "\n";
+            //terminal << "\n\n";
+                    
+            motor_control.set_right_torque(torque);
+            motor_control.set_left_torque(torque);
+            
+            timer.delay_ms(50);
+        }
+
+       
+        // stop motors
+        motor_control.set_right_torque(0);
+        motor_control.set_left_torque(0);
+        timer.delay_ms(100);
+    }
+
+}

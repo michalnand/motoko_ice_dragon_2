@@ -51,14 +51,17 @@ int ControlLoop::init()
 
 
     this->position_controller.init(lqr_kx, lqr_ki, 1.0f, 1.0f);
-    */           
+    */             
 
     distance_shaper.init(0.1f);
-    angle_shaper.init(0.025f);    
+    angle_shaper.init(0.03f);    
     
 
-    pid_forward.init(3.0f, 0.0002f, 0.5f, 1.0f);   
-    pid_turn.init(0.3f, 0.0003f, 0.1f, 1.0f);         
+    pid_forward.init(10.0f, 0.0f, 2.0f, 1.0f);  
+
+    
+    pid_turn.init(1.8f, 0.0f, 2.0f, 1.0f);         
+    //pid_turn.init(0.1f, 0.0f, 0.1f, 1.0f);         
 
 
 
@@ -118,7 +121,7 @@ void ControlLoop::callback()
     float u_turn    = this->position_controller.get_u(1);
     */
 
-    float u_forward = 0; //pid_forward.step(distance_req - distance);
+    float u_forward = pid_forward.step(distance_req - distance);
     float u_turn    = pid_turn.step(angle_req - angle);
 
     float u_right   = u_forward + u_turn;   

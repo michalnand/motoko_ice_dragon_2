@@ -30,15 +30,16 @@ int main()
     //motor_pwm_test();
     //motor_driver_test();  
     //encoder_filter_test();  
-    //motor_identification();
+    //motor_identification(); 
     //motor_control_test();
-
+    
 
 
     //gyro_control_test();
 
     //position_test();    
     
+    //FrictionCalibration();
     //RobotIdentification();
     PositionControlTest();  
 

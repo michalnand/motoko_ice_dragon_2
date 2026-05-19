@@ -31,7 +31,7 @@ void encoder_calibration();
 void gyro_control_test();
 
 
-
+void FrictionCalibration();
 void RobotIdentification();
 void PositionControlTest();
 

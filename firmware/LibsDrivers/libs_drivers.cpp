@@ -75,7 +75,7 @@ void LibsDriversInit()
         blink_error(1);
     }   
     
-    
+    /*
     // ADC init
     adc.init(); 
     terminal << "ADC init done\n";
@@ -85,9 +85,9 @@ void LibsDriversInit()
     terminal << "line sensor init done\n";
 
     // distance IR sensor init
-    //ir_sensor.init();
-    //terminal << "IR sensor init done\n";
-    
+    ir_sensor.init();
+    terminal << "IR sensor init done\n";
+    */    
 
     // motor control init
     int motor_init_res = motor_control.init();

@@ -100,9 +100,11 @@ class MotorControl
 
     private:
         float left_req_torque, right_req_torque;
+        float left_torque_fil, right_torque_fil;
         float left_req_velocity, right_req_velocity;
 
         ControlMode  left_cl_mode, right_cl_mode;
+
 };
 
 

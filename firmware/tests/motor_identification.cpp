@@ -15,7 +15,9 @@ void motor_identification()
 
     // here we are targeting low speeds
     uint32_t samples = 5;
-    float u_values[samples] = {0.05, 0.1, 0.2, 0.3, 0.4}; //, 0.6, 0.7, 0.8, 0.9, 1.0};
+    //float u_values[samples] = {0.05, 0.1, 0.2, 0.3, 0.4}; //, 0.6, 0.7, 0.8, 0.9, 1.0};
+
+    float u_values[samples] = {0.1, 0.2, 0.3, 0.4, 0.5}; //, 0.6, 0.7, 0.8, 0.9, 1.0};
     
     float k_mean     = 0.0;
     float x_var_mean = 0.0;   

@@ -32,7 +32,7 @@ void PositionControlTest()
     uint32_t t_initial = timer.get_time();  
     while (1)        
     {       
-        uint32_t idx = (cnt/300)%4;     
+        uint32_t idx = (cnt/100)%4;     
 
         float distance_req = distance_req_all[idx]*0.001;
         float angle_req    = angle_req_all[idx]*PI/180.0f;

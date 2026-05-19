@@ -126,6 +126,9 @@ int MotorControl::init()
     right_controller.init(Kx, Ki, 1.0f);
     left_controller.init(Kx, Ki, 1.0f);
 
+    this->right_torque_fil = 0.0f;
+    this->left_torque_fil = 0.0f;
+
     //init timer
     timer_init();   
 
@@ -271,32 +274,36 @@ void MotorControl::callback()
     this->state_filter.step(this->right_filter.position_est, this->right_filter.velocity_est, this->left_filter.position_est, this->left_filter.velocity_est);
     
 
-    float ks = 0.0; 
 
-    if (this->right_cl_mode == ControlMode::VELOCITY)
-    {
-        this->right_controller.x_req = right_req_velocity;
-        this->right_controller.x_obs = this->right_filter.velocity_est;
-        
-        this->right_controller.step();  
+    // torque filter
+    float torque_k   = 0.2f;
+    float torque_eps = 0.01;
+    //float K_right    = 0.075f;   
+    //float K_left     = 0.057f;
 
-        this->right_req_torque = this->right_controller.u + ks*sgn(right_req_velocity);
-    }
 
-    if (this->left_cl_mode == ControlMode::VELOCITY)
-    {
-        this->left_controller.x_req = left_req_velocity;
-        this->left_controller.x_obs = this->left_filter.velocity_est;
-        
-        this->left_controller.step();
 
-        this->left_req_torque = this->left_controller.u + ks*sgn(left_req_velocity);
-    }   
+    this->right_torque_fil = (1.0f - torque_k)*this->right_torque_fil + torque_k*this->right_req_torque;
+    this->left_torque_fil  = (1.0f - torque_k)*this->left_torque_fil  + torque_k*this->left_req_torque;
 
+   
+   
+    float Kv = 0.142f;
+    
+    float Ktr = 0.047;
+    float Ktl = 0.0f; 
+
+  
+
+    float right_torque = (1.0f + Kv)*this->right_torque_fil + Ktr*sgn(this->right_torque_fil);
+    float left_torque  = (1.0f - Kv)*this->left_torque_fil + Ktl*sgn(this->left_torque_fil);
+
+    
+    
     // scale -1...1 range into -PWM_VALUE_MAX .. PWM_VALUE_MAX
     // send torques to motors   
-    set_torque_from_rotation(-this->right_req_torque*PWM_VALUE_MAX, right_encoder.angle, 1);
-    set_torque_from_rotation(-this->left_req_torque*PWM_VALUE_MAX, left_encoder.angle, 0);
+    set_torque_from_rotation(-right_torque*PWM_VALUE_MAX, right_encoder.angle, 1);
+    set_torque_from_rotation(-left_torque*PWM_VALUE_MAX, left_encoder.angle, 0);
     
     this->steps++;  
 }
