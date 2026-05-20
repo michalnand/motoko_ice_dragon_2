@@ -288,12 +288,10 @@ void MotorControl::callback()
 
    
    
-    float Kv = 0.142f;
+    float Kv = 0.0f;
     
-    float Ktr = 0.047;
+    float Ktr = 0.0f;
     float Ktl = 0.0f; 
-
-  
 
     float right_torque = (1.0f + Kv)*this->right_torque_fil + Ktr*sgn(this->right_torque_fil);
     float left_torque  = (1.0f - Kv)*this->left_torque_fil + Ktl*sgn(this->left_torque_fil);

@@ -32,16 +32,16 @@ int main()
     //encoder_filter_test();  
     //motor_identification(); 
     //motor_control_test();
-    
+
 
 
     //gyro_control_test();
 
     //position_test();    
     
-    //FrictionCalibration();
+    FrictionCalibration();
     //RobotIdentification();
-    PositionControlTest();  
+    //PositionControlTest();  
 
     //gyro_control_test();
     
