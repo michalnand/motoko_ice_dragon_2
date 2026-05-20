@@ -119,13 +119,13 @@ void encoder_calibration()
     
     for (unsigned int i = 0; i < 10; i++)     
     {
-        // torque, rotor angle, motor ID (left or right)
-        int32_t torque = (PWM_VALUE_MAX*i)/10;
+        // torque, rotor angle, motor ID (left or right)    
+        int32_t torque = (PWM_VALUE_MAX*i*0.4f)/10.0f;
         foc_control.set_torque_from_rotation(torque, (90*(int32_t)ENCODER_RESOLUTION)/360, 0);
         foc_control.set_torque_from_rotation(torque, (90*(int32_t)ENCODER_RESOLUTION)/360, 1);
         timer.delay_ms(4);
-    }
-
+    }       
+    
 
     // wait for steady tate
     timer.delay_ms(500);

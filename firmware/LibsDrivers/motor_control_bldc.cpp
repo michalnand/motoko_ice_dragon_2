@@ -78,21 +78,21 @@ int MotorControl::init()
     int right_init_res = right_encoder.init();   
     int left_init_res  = left_encoder.init(); 
 
-    
+    /*
     // calibrate zero offset
-    right_encoder.calibrate(1654);    
-    left_encoder.calibrate(1883);   
+    right_encoder.calibrate(359);    
+    left_encoder.calibrate(522); 
 
     // refresh encoders 
     right_encoder.update();      
     left_encoder.update();    
-    
+    */
 
-    /*
+    
     for (unsigned int i = 0; i < 10; i++)     
     {
         // torque, rotor angle, motor ID (left or right)
-        int32_t torque = (PWM_VALUE_MAX*i)/10;
+        int32_t torque = (PWM_VALUE_MAX*i*0.4f)/10.0f;
         this->set_torque_from_rotation(torque, (90*(int32_t)ENCODER_RESOLUTION)/360, 0);
         this->set_torque_from_rotation(torque, (90*(int32_t)ENCODER_RESOLUTION)/360, 1);
         timer.delay_ms(4);
@@ -110,7 +110,7 @@ int MotorControl::init()
 
     this->set_torque_from_rotation(0, (90*(int32_t)ENCODER_RESOLUTION)/360, 0);
     this->set_torque_from_rotation(0, (90*(int32_t)ENCODER_RESOLUTION)/360, 1);
-    */
+    
 
 
     right_filter.init(4, 20, 0.1f, 0.1f, MOTOR_CONTROL_DT);
@@ -300,7 +300,7 @@ void MotorControl::callback()
     
     // scale -1...1 range into -PWM_VALUE_MAX .. PWM_VALUE_MAX
     // send torques to motors   
-    set_torque_from_rotation(-right_torque*PWM_VALUE_MAX, right_encoder.angle, 1);
+    set_torque_from_rotation(right_torque*PWM_VALUE_MAX, right_encoder.angle, 1);
     set_torque_from_rotation(-left_torque*PWM_VALUE_MAX, left_encoder.angle, 0);
     
     this->steps++;  
@@ -389,7 +389,7 @@ void MotorControl::set_torque_from_rotation(int32_t torque, uint32_t rotor_angle
 
     if (motor_id == 0)      
     {
-        left_pwm.set(pwm_c, pwm_b, pwm_a);
+        left_pwm.set(pwm_a, pwm_b, pwm_c);
     }   
     else         
     {

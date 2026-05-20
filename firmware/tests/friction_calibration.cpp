@@ -104,18 +104,21 @@ void estimate_asymmetry(float Ktr, float Ktl)
     float torque_nom = 0.2f;
 
 
-    float Ks = 0.0f;
-    float lr = 0.0001f;
+    float Ks = 0.0f;    
+    float lr = 0.001f;
 
     uint32_t num_samples = 1000;
+
+    float eps = 0.01f;
+
 
     for (unsigned int n = 0; n < num_samples; n++)
     {
         float right_u = (1.0f + Ks)*torque_nom;
         float left_u  = (1.0f - Ks)*torque_nom;
 
-        //right_u+= Ktr*sgn(right_u);   
-        //left_u+= Ktl*sgn(left_u);
+        right_u+= Ktr*sgn(right_u);   
+        left_u+= Ktl*sgn(left_u);   
 
         motor_control.set_right_torque(right_u);
         motor_control.set_left_torque(left_u);
@@ -123,24 +126,28 @@ void estimate_asymmetry(float Ktr, float Ktl)
 
         float right_velocity = motor_control.get_right_velocity();
         float left_velocity  = motor_control.get_left_velocity();
-        float asymmetry      = right_velocity - left_velocity;
 
-        Ks+= -lr*asymmetry;  
-        Ks = clip(Ks, -0.85f, 0.85f);
+        //Ks = (1.0f - lr)*Ks + lr*(left_velocity - right_velocity)/(eps + abs(right_velocity) + abs(left_velocity));
 
+        Ks+= lr*(left_velocity - right_velocity);   
+        
         terminal << n << " " << right_velocity << " " << left_velocity << " " << Ks << "\n";
-    }
+    }   
 
     motor_control.set_right_torque(0);
     motor_control.set_left_torque(0);
-    timer.delay_ms(200);
+    timer.delay_ms(200);    
 }
 
 void FrictionCalibration()
 {
     //estimate_start_torque();
 
-    estimate_asymmetry(0.081, 0.054);
+    estimate_asymmetry(0.033, 0.034);
+    // Ktr = 0.033
+    // Ktl = 0.034
+    // Ks  = 0.2
+
 
     while (1)
     {
